@@ -1,0 +1,16 @@
+Options -Indexes
+
+RewriteEngine On
+
+# Keep application source, migrations, runtime files, and setup scripts private.
+RewriteRule ^(?:app|database|storage|scripts|routes|docs)(?:/|$) - [F,NC,L]
+
+# The repository root may be the document root on shared hosting.
+RewriteRule ^$ public/index.php [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
+
+<FilesMatch "(^\.|(?:\.env|\.sql|\.ini|\.log|\.bak|\.dist)$|^(?:composer|package)(?:\.lock)?\.json$)">
+  Require all denied
+</FilesMatch>

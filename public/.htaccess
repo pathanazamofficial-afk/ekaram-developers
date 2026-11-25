@@ -1,0 +1,12 @@
+Options -Indexes
+
+RewriteEngine On
+
+# Route the public application through the front controller.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [L]
+
+<FilesMatch "\.(?:env|ini|log|sql|bak)$">
+  Require all denied
+</FilesMatch>
