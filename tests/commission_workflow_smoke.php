@@ -129,6 +129,33 @@ try {
             throw new RuntimeException('The common Marketing Associate reporting chain omitted an approved team member');
         }
     }
+    $boundary = 9;
+    $boundaryCheck = $pdo->prepare('SELECT COUNT(*) FROM users WHERE id IN (:parent_id, :child_id)');
+    do {
+        $boundaryCheck->execute(['parent_id' => $boundary, 'child_id' => $boundary + 1]);
+        if ((int) $boundaryCheck->fetchColumn() === 0) {
+            break;
+        }
+        $boundary = $boundary * 10 + 9;
+    } while (true);
+    $boundaryInsert = $pdo->prepare(
+        'INSERT INTO users (id, role_id, full_name, phone, password_hash, account_status)
+         VALUES (:id, :role_id, :name, :phone, :password, :status)'
+    );
+    foreach ([$boundary, $boundary + 1] as $index => $id) {
+        $boundaryInsert->execute([
+            'id' => $id,
+            'role_id' => (int) $associateRoleId,
+            'name' => 'Commission smoke test boundary ' . $index,
+            'phone' => '+1888' . $sequence++,
+            'password' => password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT),
+            'status' => 'active',
+        ]);
+        $profileInsert->execute(['user_id' => $id, 'manager_id' => $index === 0 ? null : $boundary]);
+    }
+    if (!in_array($boundary + 1, Auth::visibleUserIds($boundary), true)) {
+        throw new RuntimeException('The reporting chain omitted a user whose ID has more digits than their manager');
+    }
     $inviteToken = bin2hex(random_bytes(32));
     $pdo->prepare(
         'INSERT INTO recruitment_invites

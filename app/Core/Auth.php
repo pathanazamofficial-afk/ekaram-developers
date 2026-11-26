@@ -93,7 +93,7 @@ final class Auth
                 SELECT user_id, reporting_manager_id FROM marketing_associate_profiles
              ),
              reporting_team(user_id) AS (
-                SELECT :user_id
+                SELECT CAST(:user_id AS UNSIGNED)
                 UNION DISTINCT
                 SELECT edge.user_id
                 FROM hierarchy_edges edge
